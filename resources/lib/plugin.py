@@ -34,8 +34,8 @@ def Get(url):
 
 @plugin.route('/')
 def index():
-    # addDirectoryItem(plugin.handle, plugin.url_for(
-    #     show_search_input), ListItem("Search"), True)
+    addDirectoryItem(plugin.handle, plugin.url_for(
+        show_search_input), ListItem("Search"), True)
     p = Get('http://jiqimao.tv/rank/jqm/show/tv/3/')
     it = re.finditer(r"""<a href="(.*?)" style="float: left;" target="_blank" onclick="(?:.*?)" >
             <div class="dl-cover" style="background: url\('(.*?)'\) no-repeat 10px -85px">
@@ -65,8 +65,8 @@ def index():
 def show_search_input():
     s = dialog.input('Search')
     # print s
-    p = Get('http://jiqimao.tv/search/video/' + s)
-    print p
+    p = Get('http://jiqimao.tv/search/video/' + urllib.quote_plus(s))
+    # print p
     it = re.finditer( r"""<a href="(.*?)" target="_blank">
                 <div class="search-tv-box">
                     <img class="search-tv-img" src="(.*?)" alt="(?:.*?)" onerror="loadDefaultMid\(\);">
@@ -96,11 +96,11 @@ def show_search_input():
 def show_detail():
     img = plugin.args['img'][0]
     id = plugin.args['id'][0]
-    # print '=============detail==================='
-    # print id
-    # print img
+    print '=============detail==================='
+    print id
+    print img
     p = Get('http://jiqimao.tv/movie/show/' + id)
-    it = re.finditer(r'<li(?: class="hide")?><a title="(?:.*?)" onclick="(?:.*)web_player_click_(.*?)\'\]\)" target="_blank" href="(.*?)">(?:.*?)</a></li>' ,p)
+    it = re.finditer(r'<a.*?onclick="(?:.*)web_player_click_(.*?)\'\]\)".*?href="(.*?)">(?:.*?)</a>' ,p)
 
     plot = ''
     plotObj = re.search(r'<p><span>剧情介绍：</span>(.*?)</p>',p)
