@@ -7,6 +7,7 @@ from resources.lib import kodiutils
 from resources.lib import kodilogging
 from xbmcgui import ListItem, Dialog, DialogProgress
 from xbmcplugin import addDirectoryItem, endOfDirectory
+from xbmc import PlayList, PLAYLIST_VIDEO, Player
 
 import urllib2
 import urllib
@@ -31,6 +32,14 @@ def Get(url):
     req = urllib2.Request(url)
     req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.6; rv:5.0)')
     return urllib2.urlopen(req).read()
+
+def playUrl(video_url):
+    playlist = PlayList(PLAYLIST_VIDEO)
+    playlist.clear()
+    li = ListItem(path=video_url)
+    li.setInfo( type="video", infoLabels={ "Path" : video_url } )
+    playlist.add(url=video_url, listitem=li)
+    Player().play(playlist)
 
 @plugin.route('/')
 def index():
@@ -115,7 +124,7 @@ def show_detail():
             'title': title,
             'plot': plot
         })
-        addDirectoryItem(plugin.handle, plugin.url_for(play_Video, video=vid, img=img, plot=plot, title=title), li, True)
+        addDirectoryItem(plugin.handle, plugin.url_for(play_Video, video=vid, img=img, plot=plot, title=title), li, False)
 
     endOfDirectory(plugin.handle)
 
@@ -123,7 +132,7 @@ def show_detail():
 def play_Video():
     img = plugin.args['img'][0]
     video_url = plugin.args['video'][0]
-    plot = plugin.args['plot'][0]
+    # plot = plugin.args['plot'][0]
     title = plugin.args['title'][0]
     print '=======================>'
     progress = DialogProgress()
@@ -134,9 +143,9 @@ def play_Video():
     progress.update(70, "", 'Loading M3U8 Files', "")
 
     p = Get(jsonObj['url'])
-    url = re.search(r'.*\.m3u8',p).group()
+    url = re.search(r'.*\.m3u8',p).group().replace('http://','https://')
     # print jsonObj['url']
-    # print url
+    print url
     # print jsonObj['url'].replace('index.m3u8',url)
     progress.update(100, "", "", "")
     progress.close()
@@ -156,12 +165,13 @@ def play_Video():
     # # print plot
     #
     li.setInfo("video",{
-        'title': title,
-        'plot': plot
+        'title': title
+        # 'plot': plot
     })
     # video_url = match.group(1).replace('\/','/')
-    addDirectoryItem(plugin.handle, jsonObj['url'].replace('index.m3u8',url), li)
-    endOfDirectory(plugin.handle)
+    # addDirectoryItem(plugin.handle, jsonObj['url'].replace('index.m3u8',url).replace('http://','https://'), li)
+    # endOfDirectory(plugin.handle)
+    playUrl(jsonObj['url'].replace('index.m3u8',url).replace('http://','https://'))
 
 def run():
     plugin.run()
